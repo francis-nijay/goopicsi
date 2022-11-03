@@ -15,6 +15,21 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
+var (
+
+	conn *grpc.ClientConn
+	address string
+)
+
+func dialConnection () error {
+	conn, err := grpc.Dial(address, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Printf("Failed to connect: %v", err)
+		return err
+	}
+	return nil
+}
+
 // ConnectToRemoteAndExpose connects to the remote storage over NVMe/TCP and exposes it as a local NVMe/PCIe device
 func ConnectToRemoteAndExpose(addr string) error {
 	flag.Parse()
@@ -71,3 +86,48 @@ func ConnectToRemoteAndExpose(addr string) error {
 	log.Printf("Added: %v", rn1)
 	return nil
 }
+
+func NVMeControllerConnect(id string) error {
+
+	if conn == nil {
+		err = dialConnection()
+		if err != nil {
+			return err
+		}
+	}
+
+	client := pb.NewNVMfRemoteControllerServiceClient(conn)
+	response, err := client.NVMfRemoteControllerConnect(ctx, &pb.NVMfRemoteControllerConnectRequest{Ctrl: &pb.NVMfRemoteController{Id: id}})
+	if err != nil {
+		log.Printf("could not connect to Remote NVMf controller: %v", err)
+		return err
+	}
+	log.Printf("Controller Connect Response: %v", response)
+
+
+}
+
+func NVMeConnect(id string, address string, subNqn string, port int64) error {
+
+	if conn == nil {
+		err = dialConnection()
+		if err != nil {
+			return err
+		}
+	}
+
+
+}
+
+func NVMeDisconnect(id string) error {
+
+}
+
+func ListNVMeSubsystems(id string) error {
+
+}
+
+func ListAllNVMeSubsystems(addr string) error {
+
+}
+
